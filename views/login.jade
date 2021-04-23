@@ -1,0 +1,8 @@
+extends layout.jade
+
+block content
+  .login-box
+    form(method="post" autocomplete='off' class="login-form")
+      input(type="text" name="username" placeholder="Username" class="input username-input")
+      input(type="password" name="password" placeholder="Password" class="input password-input")
+      button(type="submit" class="login-button") Login
