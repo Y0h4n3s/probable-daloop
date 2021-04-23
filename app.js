@@ -4,12 +4,19 @@ var path = require('path');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var db = require('./helpers/DbHelper');
 
+async function setupDb() {
+  await db.createConnection("mongodb://127.0.0.1:27017");
+}
+setupDb().catch(console.error);
+
+console.log(db.db)
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
 var app = express();
-
+app.locals.db = db;
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
