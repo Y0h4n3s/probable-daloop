@@ -1,11 +1,11 @@
-const {MongoClient} = require('mongodb')
-
+const {MongoClient, ObjectId} = require('mongodb')
 
 const DbOps = {
   async createConnection(url) {
     var client = new MongoClient(url);
     await client.connect();
     this.client = client;
+    this.db = client.db("probable_daloop");
   },
 
   async listDatabases(){
@@ -17,11 +17,26 @@ const DbOps = {
   },
 
   async addUser(username, password) {
-    const result = await this.client.db("probable_daloop").collection("users").insertOne({username: username, password: password});
+    const result = await this.db.collection("users").insertOne({username: username, password: password, initialSetup: false});
   },
 
-  async queryUserByUsername (username) {
-    const result = await this.client.db("probable_daloop").collection("users").findOne({username: username});
+  async queryUserByUsername (username, callback) {
+    const result = await this.db.collection("users").findOne({username: username});
+    callback(result, this.db);
+  },
+
+  async queryUserById (id, callback) {
+    const result = await this.db.collection("users").findOne({_id: ObjectId(id)});
+    console.log(id)
+    callback(result, this.db);
+  },
+
+  async clearDb() {
+    this.db.collection("users").deleteMany({});
+  },
+
+  async listDocuments() {
+    const result = await this.db.collection("users").find({});
     return result;
   }
 }

@@ -1,52 +1,68 @@
 var express = require('express');
 var router = express.Router();
 var auth = require('../helpers/AuthHelper')
-/* GET home page. */
-router.get('/', function(req, res, next) {
-  if(req.session.cookie.sessid == null) {
+
+const redirectLogin = (req, res, next) => {
+  if (!req.session.sessid) {
+    res.redirect('/login')
+  }
+  next()
+}
+const redirectUser = (req, res, next) => {
+  if (req.session.sessid) {
+    res.redirect('/user')
+  }
+  next()
+}
+
+router.get('/', redirectLogin, function(req, res, next) {
     res.redirect('/login/');
-  }
-  else {
-    res.redirect('/user/');
-  }
 
-  res.render('index', { title: 'Express' });
 });
 
-router.get('/login', function(req, res, next) {
-  if(req.session.cookie.sessid) {
-    res.redirect('/user/');
-  }
-  res.render('login');
+
+router.get('/login', redirectUser, function(req, res, next) {
+    res.render('login');
 });
 
-router.post('/login', function(req, res, next) {
+router.post('/login', async function(req, res, next) {
   if (req.body.username && req.body.password) {
-    user = auth.authenticate(req.body.username, req.body.password, req.app.locals.db)
+    var user = await auth.authenticate(req.body.username, req.body.password, req.app.locals.db)
     if (user) {
-      req.session.sessid = user;
-      res.redirect("/user/");
-    }
-
-    res.redirect("/login")
+      req.session.sessid = user._id;
   }
-  
+    
+  }
+  res.redirect("/login")
 })
 
-router.get("/sign_up", function(req, res, next){
+router.get("/sign_up", redirectUser, function(req, res, next){
   res.render("sign_up")
 })
 
-router.post('/sign_up', function(req, res, next) {
+router.post('/sign_up', async function(req, res, next) {
   if (req.body.username && req.body.password) {
-    auth.signUpNewUser(req.body.username, req.body.password,req.app.locals.db);
-    res.redirect('/login')
+    var success = await auth.signUpNewUser(req.body.username, req.body.password,req.app.locals.db);
+    if (success)
+      res.redirect('/login');
+    else {
+      res.render('sign_up', {"msg":"The Username Is Taken Pick A Unique Username"});
+    }
   }
 })
 
 router.get('/list_databases', function(req, res, next) {
   req.app.locals.db.listDatabases();
   res.send('<p>listed</p>');
+})
+
+router.get('/clean_db', function(req, res, next) {
+  req.app.locals.db.clearDb();
+  res.send("Cleared");
+})
+
+router.get("/list_data", function(req, res, next) {
+  res.send(req.app.locals.db.listDocuments());
 })
 
 module.exports = router;

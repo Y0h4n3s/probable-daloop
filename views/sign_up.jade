@@ -3,6 +3,9 @@ extends layout.jade
 block content
     .signup-box
     form(method="post" autocomplete='off' class="login-form")
+
       input(type="text" name="username" placeholder="Username" class="input username-input")
       input(type="password" name="password" placeholder="Password" class="input password-input")
+      if msg
+        <p>#{msg}</p>
       button(type="submit" class="signup-button") Sign Up
