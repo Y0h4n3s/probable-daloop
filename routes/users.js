@@ -33,7 +33,8 @@ router.get('/', redirectLogin, redirectSetup, redirectHome, async function (req,
 });
 
 router.get('/dashboard', redirectLogin, redirectSetup, async function (req, res) {
-  res.json(await user.dashboardData(req.session.uid, req.app.locals.db))
+  let data = await user.dashboardData(req.session.uid, req.app.locals.db)
+  res.render('user/dashboard', {data: data})
 })
 
 router.get('/setup', redirectLogin, redirectHome, function (req, res) {
