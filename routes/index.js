@@ -3,20 +3,20 @@ var router = express.Router();
 var auth = require('../helpers/AuthHelper')
 
 const redirectLogin = (req, res, next) => {
-  if (!req.session.sessid) {
+  if (!req.session.uid) {
     res.redirect('/login')
   }
   next()
 }
 const redirectUser = (req, res, next) => {
-  if (req.session.sessid) {
+  if (req.session.uid) {
     res.redirect('/user')
+  } else{
+    next()
   }
-  next()
 }
 
-router.get('/', redirectLogin, function(req, res, next) {
-    res.redirect('/login/');
+router.get('/', redirectLogin, redirectUser, function(req, res, next) {
 
 });
 
@@ -29,11 +29,11 @@ router.post('/login', async function(req, res, next) {
   if (req.body.username && req.body.password) {
     var user = await auth.authenticate(req.body.username, req.body.password, req.app.locals.db)
     if (user) {
-      req.session.sessid = user._id;
+      req.session.uid = user._id;
+      res.redirect('/user')
+    }
   }
-    
-  }
-  res.redirect("/login")
+    res.render("login")
 })
 
 router.get("/sign_up", redirectUser, function(req, res, next){
@@ -61,8 +61,10 @@ router.get('/clean_db', function(req, res, next) {
   res.send("Cleared");
 })
 
-router.get("/list_data", function(req, res, next) {
-  res.send(req.app.locals.db.listDocuments());
+router.get("/list_data", async function(req, res, next) {
+  var resp = await req.app.locals.db.listDocuments()
+  console.log(resp)
+  res.send("success");
 })
 
 module.exports = router;

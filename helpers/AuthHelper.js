@@ -1,10 +1,10 @@
 module.exports = {
   async authenticate(user, pass, db) {
-    var result = await new Promise(resolve => {
+    var result = await new Promise((resolve, reject) => {
       db.queryUserByUsername(user, (result, db) => {
-        resolve(result)
+        resolve(result && result.password == pass ? result : null)
       }) 
-    }).catch(console.log)
+    }).catch(console.error)
     return result
     
   },
@@ -14,7 +14,6 @@ module.exports = {
       db.queryUserByUsername(user, async (result, db) => {
       if (result == null) {
         const result = await db.collection("users").insertOne({username: user, password: pass, initialSetup: false});
-        console.log(result)
         resolve(true)
       }
       resolve(false)

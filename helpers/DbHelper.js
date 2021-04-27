@@ -1,8 +1,9 @@
-const {MongoClient, ObjectId} = require('mongodb')
+const {MongoClient, ObjectId} = require('mongodb');
+const { initialSetup } = require('./UserHelper');
 
 const DbOps = {
-  async createConnection(url) {
-    var client = new MongoClient(url);
+  async createConnection(url, options={}) {
+    var client = new MongoClient(url, options);
     await client.connect();
     this.client = client;
     this.db = client.db("probable_daloop");
@@ -27,7 +28,6 @@ const DbOps = {
 
   async queryUserById (id, callback) {
     const result = await this.db.collection("users").findOne({_id: ObjectId(id)});
-    console.log(id)
     callback(result, this.db);
   },
 
@@ -38,7 +38,12 @@ const DbOps = {
   async listDocuments() {
     const result = await this.db.collection("users").find({});
     return result;
-  }
+  },
+
+  async initialSetup(id , tasks, callback) {
+    const result = await this.db.collection("users").updateOne({_id: ObjectId(id)}, {$set: {initialSetup: true, "data": tasks}})
+    callback(result)
+  } 
 }
 
 module.exports = DbOps;
