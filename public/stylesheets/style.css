@@ -138,7 +138,6 @@ tr {
   border-bottom: solid gray 1px;
   background: none;
   outline: none;
-  transition: 1s ease all;
   border-radius: 3px;
 }
 .password-input:focus, .username-input:focus {

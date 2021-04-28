@@ -6,8 +6,12 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var db = require('./helpers/DbHelper');
 
+const {
+  MONGODB_URI = "mongodb://127.0.0.1:27017/?gssapiServiceName=mongodb",
+  EXPRESS_COOKIE_SECRET = "shhhhhhhhhh@!!"
+} = process.env
 async function setupDb() {
-  await db.createConnection("mongodb://127.0.0.1:27017/?gssapiServiceName=mongodb",  { useUnifiedTopology: true });
+  await db.createConnection(MONGODB_URI,  { useUnifiedTopology: true });
 }
 setupDb().catch(console.error);
 
@@ -27,7 +31,7 @@ app.use(session({
   },
   resave: false,
   saveUninitialized: true,
-  secret: "shhhhhhhhhh@!!"
+  secret: EXPRESS_COOKIE_SECRET
 }))
 app.use(logger('dev'));
 app.use(express.json());
