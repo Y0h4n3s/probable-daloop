@@ -11,7 +11,6 @@ async function setupDb() {
 }
 setupDb().catch(console.error);
 
-console.log(db.db)
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var apiRouter = require('./routes/api')

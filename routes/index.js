@@ -5,8 +5,9 @@ var auth = require('../helpers/AuthHelper')
 const redirectLogin = (req, res, next) => {
   if (!req.session.uid) {
     res.redirect('/login')
+  } else {
+    next()
   }
-  next()
 }
 const redirectUser = (req, res, next) => {
   if (req.session.uid) {
@@ -16,24 +17,23 @@ const redirectUser = (req, res, next) => {
   }
 }
 
-router.get('/', redirectLogin, redirectUser, function(req, res, next) {
+router.get('/', redirectLogin, redirectUser, function(req, res) {
 
 });
 
 
-router.get('/login', redirectUser, function(req, res, next) {
+router.get('/login', redirectUser, function(req, res) {
     res.render('login');
 });
 
-router.post('/login', async function(req, res, next) {
+router.post('/login', async function(req, res) {
   if (req.body.username && req.body.password) {
     var user = await auth.authenticate(req.body.username, req.body.password, req.app.locals.db)
     if (user) {
       req.session.uid = user._id;
-      res.redirect('/user')
-    }
+    } 
   }
-    res.render("login")
+      res.redirect("login")
 })
 
 router.get("/sign_up", redirectUser, function(req, res, next){

@@ -2,19 +2,21 @@ extends ../layout.jade
 
 
 block content
-  if stepNo == 1
-    button(class="add-course-button" id="add-course-button") Add Course
-    form(action="javascript:void(0)" method="post" class="add-courses-form" data-stepno=stepNo)
+  div(class="setup-container container")
+  
+    form(action="javascript:void(0)" method="post" class="add-courses-form container" data-stepno=stepNo)
       .course-info-inputs
+        button(class="add-course-button" id="add-course-button") Add Course
+
         .course-info-input
           input(type="text" placeholder="Course Name")
-          input(type="number" placeholder="Course Cp")
+          input(type="number" placeholder="Course Cp" min=1)
           input(type="text" placeholder="Course Code")
-      .time-range-picker
+      div(class="time-range-picker container")
         input(type="date" min=minDate id="start-date")
         input(type="date" id="end-date")
-      .timetable-table
+    .timetable-table
 
-      button(type="submit" class="course-selection-next") Next
+    button(type="submit" class="course-selection-next") Next
   script(src="../javascripts/setup.js")
 

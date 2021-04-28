@@ -1,5 +1,5 @@
 const {MongoClient, ObjectId} = require('mongodb');
-const { initialSetup } = require('./UserHelper');
+const { initialSetup, updateTimetable } = require('./UserHelper');
 
 const DbOps = {
   async createConnection(url, options={}) {
@@ -10,10 +10,8 @@ const DbOps = {
   },
 
   async listDatabases(){
-    console.log(this)
     databasesList = await this.client.db("probable_daloop").admin().listDatabases();
  
-    console.log("Databases:");
     databasesList.databases.forEach(db => console.log(` - ${db.name}`));
   },
 
@@ -43,7 +41,13 @@ const DbOps = {
   async initialSetup(id , tasks, callback) {
     const result = await this.db.collection("users").updateOne({_id: ObjectId(id)}, {$set: {initialSetup: true, "data": tasks}})
     callback(result)
-  } 
+  },
+
+  async updateTimetable(id, timetable, callback) {
+    const result = await this.db.collection('users').updateOne({_id: ObjectId(id)}, {$set: {"data.timeTable": timetable} })
+    //console.log(result)
+    callback(result, this)
+  }
 }
 
 module.exports = DbOps;

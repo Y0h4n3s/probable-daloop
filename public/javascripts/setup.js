@@ -37,7 +37,6 @@ nextStepButton.addEventListener('click', async (e) => {
   }
 
 
-  //TODO: remove extra days after final day
   else if (step == 2) {
     let timetable = [[]]
     let table = document.querySelector('tbody')
@@ -62,6 +61,7 @@ nextStepButton.addEventListener('click', async (e) => {
               "priority": col.childNodes[0].value == "free" ? 0 : 4,
               "difficulty": col.childNodes[0].value == "free" ? 0 : 2,
               "constant": !col.childNodes[0].value == "free",
+              "open": col.childNodes[0].value == "free",
               "courseCode": table.rows[1].cells[1].childNodes[0].selectedOptions[0].dataset.coursecode
             }
           })
@@ -71,6 +71,8 @@ nextStepButton.addEventListener('click', async (e) => {
       startingDate = new Date(startingDate.getTime() + (7*24*60*60*1000))
 
     }
+
+    // Remove Extra added Days
     let tempT = Array.from(timetable)
     let offset = 0
      tempT.forEach((date, index) => {
@@ -79,7 +81,12 @@ nextStepButton.addEventListener('click', async (e) => {
         offset += 1
       }
     })
-    console.log(timetable)
+
+    //sort the timetable by date
+
+    timetable.sort((first, second) => new Date(first[0].date) > new Date(second[0].date) ? 1 : new Date(first[0].date) < new Date(second[0].date) ? -1 : 0)
+    
+    // send the setup data to be stored
     let url = document.location.origin + "/user/setup"
     await fetch(url, {
       method: "POST",
@@ -87,10 +94,10 @@ nextStepButton.addEventListener('click', async (e) => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ "courses": data.courses, "timeTable": timetable })
+      body: JSON.stringify({ "courses": data.courses, "timeTable": timetable, "dateSpan": dateSpan, "startDate": new Date(startDate.value), "endDate": new Date(endDate.value) })
     }).then(response => response.text())
       .then(response => {
-        document.querySelector(".add-courses-form").innerHTML = new DOMParser().parseFromString(response, "text/html").querySelector(".add-courses-form")
+       document.location.reload()
       })
       .catch(console.error)
   }
@@ -110,7 +117,7 @@ const renderTable = (data) => {
 
   var times = "<tbody>"
   for (t of timeRanges) {
-    times += `<tr><td><p>${t.startTime + " - " + t.endTime}</p></td>`
+    times += `<tr ><td><p>${t.startTime + " - " + t.endTime}</p></td>`
     for (let i = 0; i < 7; i++) {
       times += `
       <td><select name="course-selector" data-timestart=${t.startTime} data-timeend=${t.endTime}>
