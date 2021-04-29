@@ -11,7 +11,7 @@ block content
               p #{day[0].dateName}
               p(class="date-value") #{new Date(day[0].date).toLocaleDateString()}
       tbody
-        - for (let i = 0; i < 12; i++)
+        - for (let i = 0; i < 17; i++)
           tr(class=i%2==0? "striped--near-white":"striped--light-gray")
             td(class="time-range") #{data[0][i].startTime} - #{data[0][i].endTime}
             each day in data

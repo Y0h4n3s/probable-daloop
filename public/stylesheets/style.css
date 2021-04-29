@@ -22,6 +22,7 @@
 
 body {
   font: var(--normal-fs) "Lucida Grande", Helvetica, Arial, sans-serif;
+  overflow: hidden;
 }
 
 a {
@@ -31,17 +32,19 @@ a {
 table {
   text-align: center;
 }
- th, .task-btn, td {
+ th, select{
   font-size: var(--large-fs);
   padding: 15px 20px;
   border: none;
   width: 170px;
 }
 
+
 select {
-  padding: 10px;
-  width: 100%;
+  padding: 15px 20px;
   font-size: var(--normal-fs);
+  border: none;
+  width: 170px;
 }
 
 input {
@@ -78,6 +81,8 @@ h2 {
   align-items: center;
   flex-wrap: wrap;
   flex-direction: column;
+  background-color: rgba(11, 11, 11, 0.2);
+
 }
 
 .container-card {
@@ -88,15 +93,16 @@ h2 {
   box-shadow: var(--container-shadow);
   flex-wrap: wrap;
   flex-direction: column;
+  background-color: rgba(11, 11, 11, 0.2);
+
 }
 
 
 tr {
   display: flex;
   justify-content: space-evenly;
-  padding: 17px 0;;
   align-items: center;
-  box-shadow: var(--container-shadow);
+  border-bottom: solid 1px gray;
   flex-wrap: wrap;
 }
 
@@ -115,13 +121,18 @@ tr {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: rgba(11, 11, 11, 0.2);
+  z-index: 0;
+
 }
 .login-form, .signup-form {
   width: 500px;
   height: 500px;
+  z-index: 10;
   display: flex;
   flex-flow: column wrap;
   justify-content: space-around;
+  background-color: white;
   padding: 7% 0;;
   align-items: center;
   box-shadow: var(--container-shadow);
@@ -152,9 +163,7 @@ tr {
 
 
 /* Setup Page */
-.setup-container {
 
-}
 
 .course-selection-next {
   margin-top: 20px;
@@ -284,12 +293,22 @@ tr {
   font-size: var(--normal-fs);
 }
 
-@media(max-width: 550px) {
+@media screen and (max-width: 550px) {
+  
+  body {
+    font-size: var(--large-fs);
+  }
   .add-task-details {
     width: 90%;
     height: 60%;
     overflow: scroll;
   }
+
+  .login-form, .signup-form {
+    width: 80%;
+  }
+
+
 }
 
 
