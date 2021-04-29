@@ -1,7 +1,7 @@
 var router = (module.exports = require("express").Router());
 const auth = require("../helpers/AuthHelper");
 const user = require("../helpers/UserHelper");
-const {frames} = require("../helpers/Constants")
+const { frames } = require("../helpers/Constants");
 const redirectLogin = (req, res, next) => {
   if (!req.session.uid) {
     res.status(401).json({ msg: "You Need to Login First" });
@@ -97,13 +97,15 @@ router.get("/user/tasks", redirectLogin, redirectSetup, async (req, res) => {
 });
 
 router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
-  const {
+  let {
     taskName,
     priority = 2,
     difficulty = 2,
     courseCode,
     dueDate,
   } = req.body;
+  difficulty = parseInt(difficulty);
+  priority = parseInt(priority);
   if (void 0 === taskName || void 0 === courseCode || void 0 === dueDate) {
     res.status(400).send({ msg: "Missing Required Parameters" });
   }
@@ -121,38 +123,60 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
   }
   shards.sort((a, b) => (a > b ? -1 : b > a ? 1 : 0));
   var todaysIndex = getTodaysIndex(timetable);
-  var jumpOffset = calculateJumpOffset(
-    daysLeftTillDueDate,
-    shards.length,
-    freeSlots.reduce((a, b) => a + b)
-  );
+
   var allFrames = timetable.reduce((acc, day) => acc.concat(day));
 
-  for (var shard of shards) {
-    for (var [i, frame] of allFrames.entries()) {
-      var check = true;
-      for (var j = shard; j < i + shard; j++) {
-        check = allFrames[j].open;
+  for (var shard of Array.from(shards)) {
+    freeSlots = countFreeSlots(timetable, difficulty + 1);
+    var jumpOffset = calculateJumpOffset(
+      daysLeftTillDueDate,
+      shards.length,
+      freeSlots.reduce((a, b) => a + b),
+      0
+    );
+    for (let i = 0; jumpOffset >= daysLeftTillDueDate * 17; i++) {
+      jumpOffset = calculateJumpOffset(
+        daysLeftTillDueDate,
+        shards.length,
+        freeSlots.reduce((a, b) => a + b),
+        -i
+      );
+    }
+    for (
+      let i = jumpOffset, reset = 0;
+      i < allFrames.length && i < daysLeftTillDueDate * 17;
+      reset++, i = (i + jumpOffset) % (17 * daysLeftTillDueDate)
+    ) {
+      var check = false;
+      for (var j = i; j < i + shard; j++) {
+        if (null == allFrames[i + shard]) break;
+        check = allFrames[j].task.open;
         if (!check) break;
       }
       if (check) {
-        for (var j = shard; j < i + shard; j++) {
+        for (var j = i; j < i + shard; j++) {
           allFrames[j].task.taskName = taskName;
           allFrames[j].task.priority = priority;
           allFrames[j].task.difficulty = difficulty;
           allFrames[j].task.open = false;
           allFrames[j].task.courseCode = courseCode;
         }
+        shards.shift();
         break;
+      }
+      if (reset == allFrames.length) {
+        jumpOffset++;
+        reset = 0;
       }
     }
   }
-  var timetable = []
-  for (var i = 0; i < allFrames.length - frames.length; i+=frames.length) {
-    timetable.push(allFrames.splice(i, frames.length))
+  var timetable = [];
+  var len = allFrames.length / 17;
+  for (var i = 0; i < len; i++) {
+    timetable.push(allFrames.splice(0, 17));
   }
   console.log({ timetable });
- 
+
   const updatedTable = await user.updateTimetable(
     req.session.uid,
     timetable,
@@ -161,9 +185,14 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
   res.json(updatedTable);
 });
 
-function calculateJumpOffset(daysLeftTillDueDate, numOfShards, totalFreeSlots) {
-  var jumpOffset = (daysLeftTillDueDate + totalFreeSlots) / numOfShards;
-  return jumpOffset;
+function calculateJumpOffset(
+  daysLeftTillDueDate,
+  numOfShards,
+  totalFreeSlots,
+  bias
+) {
+  var jumpOffset = (totalFreeSlots * numOfShards) / daysLeftTillDueDate + bias;
+  return parseInt(jumpOffset);
 }
 
 function halfMaxShard(shards) {
@@ -200,7 +229,7 @@ function countFreeSlots(timetable, shard) {
 }
 
 function max(arr) {
-  return Math.max.apply(Math, arr)
+  return Math.max.apply(Math, arr);
 }
 
 function getTodaysIndex(timetable) {

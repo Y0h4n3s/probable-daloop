@@ -140,12 +140,13 @@ const timeRanges =
   ]
 
 const renderTable = (data) => {
+  let days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
   var times = "<tbody>";
   for (t of timeRanges) {
     times += `<tr ><td><p>${t.startTime + " - " + t.endTime}</p></td>`;
     for (let i = 0; i < 7; i++) {
       times += `
-      <td><select name="course-selector" data-timestart=${t.startTime} data-timeend=${t.endTime}>
+      <td data-label=${days[i]}><select name="course-selector" data-timestart=${t.startTime} data-timeend=${t.endTime}>
         <option value="free">Free</option>`;
       for (d of data) {
         times += `<option value="${d.courseName}" data-coursecode="${d.courseCode}">${d.courseName}</option>`;

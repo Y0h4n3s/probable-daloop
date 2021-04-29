@@ -1,7 +1,7 @@
 :root {
-  --normal-fs: 1em;
-  --large-fs: 1.3em;
-  --small-fs: 0.9em;
+  --normal-fs: clamp(1rem, 0.1054rem + 3.9761vw, 1.2rem);
+  --large-fs: clamp(1.3rem, 0.1054rem + 3.9761vw, 2rem);
+  --small-fs: clamp(0.8rem, 0.1054rem + 3.9761vw, 0.9rem);
 
   --color-btn-p: #060a08;
   --bg-color-p: #17eb8b;
@@ -22,7 +22,7 @@
 
 body {
   font: var(--normal-fs) "Lucida Grande", Helvetica, Arial, sans-serif;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 a {
@@ -31,21 +31,17 @@ a {
 
 table {
   text-align: center;
+  border-collapse: colapse;
+  table-layout: fixed;
+  width: 100%;
 }
  th, select{
-  font-size: var(--large-fs);
-  padding: 15px 20px;
-  border: none;
-  width: 170px;
-}
-
-
-select {
-  padding: 15px 20px;
   font-size: var(--normal-fs);
+  padding: 15px 20px;
   border: none;
   width: 170px;
 }
+
 
 input {
   width: 70%;
@@ -68,7 +64,10 @@ button:hover {
 
 button:focus {
   border: none;
-  outline: #00B7FF dashed;
+}
+
+button:active {
+  outline: none;
 }
 
 h2 {
@@ -129,13 +128,15 @@ tr {
   width: 500px;
   height: 500px;
   z-index: 10;
-  display: flex;
-  flex-flow: column wrap;
-  justify-content: space-around;
+  display: grid;
+  align-content: center;
+  grid-template-columns: 100%;
   background-color: white;
-  padding: 7% 0;;
-  align-items: center;
+  padding: 7% 0;
+
   box-shadow: var(--container-shadow);
+  text-align: center;
+  row-gap: 15px;
 }
 
 
@@ -150,14 +151,16 @@ tr {
   background: none;
   outline: none;
   border-radius: 3px;
+  justify-self: center;
 }
 .password-input:focus, .username-input:focus {
   border:solid 1px;
 
 }
 
-.login-button {
+.login-button , .signup-button{
   width: 70%;
+  justify-self: center;
   
 }
 
@@ -233,9 +236,7 @@ tr {
   transition: 0.3s ease all;
 }
 
-#add-task-btn:active {
-  outline: none;
-}
+
 
 #add-task-btn:hover::after {
   transform: rotate(180deg)
@@ -249,7 +250,7 @@ tr {
   transform: scale(1.1);
 }
 .add-task-jumbo {
-  position: absolute;
+  position: fixed;
   width: 100%;
   height: 100%;
   top: 0;
@@ -293,29 +294,13 @@ tr {
   font-size: var(--normal-fs);
 }
 
-@media screen and (max-width: 550px) {
-  
-  body {
-    font-size: var(--large-fs);
-  }
-  .add-task-details {
-    width: 90%;
-    height: 60%;
-    overflow: scroll;
-  }
 
-  .login-form, .signup-form {
-    width: 80%;
-  }
-
-
-}
 
 
 #loading {
   display: none;
   background: rgba(11, 11, 11, 0.4);
-  position: absolute;
+  position: fixed;
   z-index: 999999999999;
   width: 100%;
   height: 100%;
@@ -415,4 +400,61 @@ tr {
 100% {
   transform: matrix(1, 0, 0, 1, 0, 0);
 }
+}
+
+@media only screen and (max-width: 1000px) {
+  table {
+    border: 0;
+  }
+
+  table thead {
+    border: none;
+    clip: rect(0,0,0,0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+  }
+
+  table tr {
+    border-bottom: 3px solid #ddd;
+    display: block;
+    margin-bottom: .625em;
+  }
+
+  table td {
+    border-bottom: 1px solid #ddd;
+    display: block;
+    font-size: var(--small-fs);
+    text-align: right;
+  }
+
+  table td::before {
+    content: attr(data-label);
+    float: left;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+}
+
+@media only screen and (max-width: 550px) {
+  
+  body {
+    font-size: var(--large-fs);
+  }
+  .add-task-details {
+    width: 90%;
+    height: 60%;
+    overflow: scroll;
+  }
+
+  .login-form, .signup-form {
+    width: 80%;
+    justify-self: center;
+  }
+
+
 }

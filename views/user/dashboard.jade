@@ -15,7 +15,7 @@ block content
           tr(class=i%2==0? "striped--near-white":"striped--light-gray")
             td(class="time-range") #{data[0][i].startTime} - #{data[0][i].endTime}
             each day in data
-              td
+              td(data-label=day[i].dateName)
                 button(class="priority-#{day[i].task.priority} difficulty-#{day[i].task.difficulty} task-btn" data-date=day[i].date) #{day[i].task.taskName}
   button(class="add-task-btn" id="add-task-btn")
   script(src="../javascripts/dashboard.js")

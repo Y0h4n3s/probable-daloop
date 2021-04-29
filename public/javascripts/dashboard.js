@@ -57,8 +57,8 @@ const renderAddTaskJumbo = async () => {
     <div class="add-task-jumbo"> 
       <div class="add-task-details">
         <input type="text" class="add-task-name" placeholder="Task Name"/>
-        <input type="number" class="add-task-priority" placeholder="Task Priority" min=0 max=4 default=2/>
-        <input type="number" class="add-task-difficulty" placeholder="Task Difficulty" min=0 max=4 default=2/>
+        <input type="number" class="add-task-priority" placeholder="Task Priority" min="0" max="4"/>
+        <input type="number" class="add-task-difficulty" placeholder="Task Difficulty" min="0" max="4"/>
         ${courseSelector}
         <input type="date" class="due-date-input" >
         <button class="submit-new-task-btn" onclick="submitNewTask(this)"> Submit</button>

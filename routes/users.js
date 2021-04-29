@@ -84,7 +84,8 @@ function formatTimetableData(data) {
     if (void 0 === timetable[i]) break;
 
     thisWeek[j] = timetable[i];
-    thisWeek[j][0].dateName = days[(today.getDay() - 1 + j) % 7];
+    for (let k = 0; k < 17; k++)
+      thisWeek[j][k].dateName = days[(today.getDay() - 1 + j) % 7];
   }
   return thisWeek;
 }
