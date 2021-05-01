@@ -60,32 +60,36 @@ router.post("/setup", redirectLogin, redirectHome, async function (req, res) {
 
 router.post("/addtask", redirectLogin, redirectSetup, async (req, res) => {});
 
+
+// pagination
 function formatTimetableData(data) {
   let days = [
+    "Sunday",
     "Monday",
     "Tuesday",
     "Wednesday",
     "Thursday",
     "Friday",
     "Saturday",
-    "Sunday",
   ];
   let today = new Date();
   let thisWeek = [[]];
   let tdIndex = null;
   let timetable = data.timeTable;
+  // get todays index from the timetable
   timetable.forEach((day, index) => {
-    if (new Date(day[0].date).toDateString() === today.toDateString()) {
+    if (new Date(day[0].date.slice(0, 10).replace("-", "/")).toDateString() === today.toDateString()) {
       tdIndex = index;
     }
   });
-
+  // grab one week starting from todays index from the timetable
   for (let j = 0, i = tdIndex; i < tdIndex + 7; i++, j++) {
+    //stop if the day is past the timetable
     if (void 0 === timetable[i]) break;
 
     thisWeek[j] = timetable[i];
     for (let k = 0; k < 17; k++)
-      thisWeek[j][k].dateName = days[(today.getDay() - 1 + j) % 7];
+      thisWeek[j][k].dateName = days[(today.getDay() + j) % 7];
   }
   return thisWeek;
 }

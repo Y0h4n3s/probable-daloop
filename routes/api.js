@@ -96,6 +96,96 @@ router.get("/user/tasks", redirectLogin, redirectSetup, async (req, res) => {
     );
 });
 
+// Todo: create a document for task on mongodb and use a relationship
+router.get(
+  "/user/task/:tid",
+  redirectLogin,
+  redirectSetup,
+  async (req, res) => {
+    var tasks = (await user.dashboardData(req.session.uid, req.app.locals.db))
+      .timeTable;
+    var taskId = Buffer.from(req.params.tid, "base64").toString("ascii");
+    var taskDate = taskId.slice(0, 10);
+    var taskStartTime = taskId.slice(10, 15);
+    var taskEndTime = taskId.slice(15, 20);
+    var task = "";
+    for (let day of tasks) {
+      if (
+        new Date(taskDate.replace("-", "/")).toDateString() ===
+        new Date(day[0].date.slice(0, 10).replace("-", "/")).toDateString()
+      ) {
+        for (let frame of day) {
+          if (
+            frame.startTime === taskStartTime &&
+            frame.endTime == taskEndTime
+          ) {
+            task = frame;
+            break;
+          }
+        }
+      }
+    }
+
+    if (task == "") {
+      res.status(404).json({ msg: "The Requested Task Could Not Be Found" });
+    } else {
+      res.status(201).json(task);
+    }
+  }
+);
+
+router.delete(
+  "/user/task/:tid",
+  redirectLogin,
+  redirectSetup,
+  async (req, res) => {
+    var tasks = (await user.dashboardData(req.session.uid, req.app.locals.db))
+      .timeTable;
+    var taskId = Buffer.from(req.params.tid, "base64").toString("ascii");
+    var taskDate = taskId.slice(0, 10);
+    var taskStartTime = taskId.slice(10, 15);
+    var taskEndTime = taskId.slice(15, 20);
+    var found = false;
+    for (var day of tasks) {
+      if (found) break;
+      if (
+        new Date(taskDate.replace("-", "/")).toDateString() ===
+        new Date(day[0].date.slice(0, 10).replace("-", "/")).toDateString()
+      ) {
+        for (var frame of day) {
+          if (
+            frame.startTime === taskStartTime &&
+            frame.endTime == taskEndTime
+          ) {
+            frame.task = {
+              taskName: "Free",
+              priority: 0,
+              difficulty: 0,
+              courseCode: "None",
+              open: true,
+              dueDate: "None",
+              description: "None",
+            };
+            found = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (found) {
+      const updatedTable = await user.updateTimetable(
+        req.session.uid,
+        tasks,
+        req.app.locals.db
+      );
+      res.status(201).json(updatedTable);
+    } else {
+      res.status(404).json({ msg: "The Requested Task Could Not Be Found" })
+    }
+  }
+);
+
 router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
   let {
     taskName,
@@ -103,6 +193,7 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
     difficulty = 2,
     courseCode,
     dueDate,
+    description,
   } = req.body;
   difficulty = parseInt(difficulty);
   priority = parseInt(priority);
@@ -111,7 +202,7 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
   }
   var data = await user.dashboardData(req.session.uid, req.app.locals.db);
   var timetable = data.timeTable;
-  var taskDueDate = new Date(dueDate);
+  var taskDueDate = new Date(dueDate.replace("-", "/"));
   var daysLeftTillDueDate = dateDiffInDays(new Date(), taskDueDate);
   // values taken at a time
   var shards = [difficulty + 1];
@@ -160,6 +251,8 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
           allFrames[j].task.difficulty = difficulty;
           allFrames[j].task.open = false;
           allFrames[j].task.courseCode = courseCode;
+          allFrames[j].task.dueDate = dueDate;
+          allFrames[j].task.description = description;
         }
         shards.shift();
         break;

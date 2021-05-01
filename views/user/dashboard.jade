@@ -9,7 +9,7 @@ block content
           each day in data
             th(class="bg-moon-gray" data-date=day[0].date) 
               p #{day[0].dateName}
-              p(class="date-value") #{new Date(day[0].date).toLocaleDateString()}
+              p(class="date-value") #{new Date(day[0].date.slice(0,10).replace("-","/")).toDateString()}
       tbody
         - for (let i = 0; i < 17; i++)
           tr(class=i%2==0? "striped--near-white":"striped--light-gray")
@@ -18,6 +18,9 @@ block content
               td(data-label=day[i].dateName)
                 button(class="priority-#{day[i].task.priority} difficulty-#{day[i].task.difficulty} task-btn" data-date=day[i].date) #{day[i].task.taskName}
   button(class="add-task-btn" id="add-task-btn")
+    script(src="../javascripts/jquery.js")
+  script(src="../javascripts/stacktable.js")
+
   script(src="../javascripts/dashboard.js")
   #loading
     #loading-display

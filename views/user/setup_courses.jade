@@ -13,10 +13,11 @@ block content
           input(type="number" placeholder="Course Cp" min=1)
           input(type="text" placeholder="Course Code")
       div(class="time-range-picker container")
-        input(type="date" min=minDate id="start-date")
-        input(type="date" id="end-date")
+        input(type="date" min=minDate id="start-date" value="2021-05-01")
+        input(type="date" id="end-date" value="2021-05-10")
     .timetable-table
 
     button(type="submit" class="course-selection-next") Next
+    script(src="../javascripts/stacktable.js")
   script(src="../javascripts/setup.js")
 
