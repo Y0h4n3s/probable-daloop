@@ -239,6 +239,7 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
       reset++, i = (i + jumpOffset) % (17 * daysLeftTillDueDate)
     ) {
       var check = false;
+      
       for (var j = i; j < i + shard; j++) {
         if (null == allFrames[i + shard]) break;
         check = allFrames[j].task.open;
