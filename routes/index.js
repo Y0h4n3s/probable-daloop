@@ -58,6 +58,7 @@ router.get('/list_databases', function(req, res, next) {
 
 router.get('/clean_db', function(req, res, next) {
   req.app.locals.db.clearDb();
+  req.session.destroy()
   res.send("Cleared");
 })
 

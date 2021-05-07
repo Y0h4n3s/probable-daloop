@@ -8,7 +8,7 @@ jQuery(() => {
   const endDate = $("#end-date");
   addCourseButton.on("click", (e) => {
     var newElements = new DOMParser().parseFromString(
-      `<div class="course-info-input"><input type="text" placeholder="Course Name"/><input type="number" placeholder="Course Cp"/><input type="text" placeholder="Course Code"/></div>`,
+      `<div class="course-info-input"><label class="course-info-label" for="course-name-input">Course Name</label><input type="text" name="course-name-input" placeholder="Course Name"/><label class="course-info-label" for="course-cp-input">Course Cp</label><input type="number" name="course-cp-input" placeholder="Course Cp"/><label class="course-info-label" for="course-code-input">Course Code</label><input type="text" name="course-code-input" placeholder="Course Code"/></div>`,
       "text/html"
     );
     addCourseInputs.append(newElements.querySelector(".course-info-input"));
@@ -25,25 +25,25 @@ jQuery(() => {
       var elements = $(".course-info-input");
       for (var element of elements) {
         data.courses.push({
-          courseName: element.childNodes[0].value,
-          courseCp: element.childNodes[1].value,
-          courseCode: element.childNodes[2].value,
+          courseName: element.childNodes[1].value,
+          courseCp: element.childNodes[3].value,
+          courseCode: element.childNodes[5].value,
         });
       }
-      Timetable.append(renderTable(data.courses, new Date(startDate.val())));
+      Timetable.append(renderTable(data.courses, moment(startDate.val())));
       addCourseButton.css("display", "none");
       addCourseInputs.css("display", "none");
       nextStepButton.textContent = "Submit";
       endDate.css("display", "none");
       startDate.css("display", "none");
       addCourseForm.dataset.stepno = 2;
+      addCourseForm.style.display = 'none';
       $("table").stackcolumns();
     } else if (step == 2) {
       let timetable = [[]];
-      let table = $("tbody")[1];
-      let startingDate = new Date(startDate.val());
-      let finalDate = new Date(endDate.val());
-      let dateSpan = dateDiffInDays(startingDate, finalDate);
+      let startingDate = moment(startDate.val());
+      let finalDate = moment(endDate.val());
+      let dateSpan = Math.abs(finalDate.diff(startingDate, 'days'))
       let width =
         window.innerWidth ||
         document.documentElement.clientWidth ||
@@ -64,10 +64,9 @@ jQuery(() => {
       }
       for (let i = 0; i < dateSpan; i += 7) {
         for (let k = 0; k < 17; k++) {
-          let tempDate = new Date(startingDate.toDateString());
-
+          let tempDate = moment(startingDate);
           for (let j = 0; j < 7; j++) {
-            let indx = (startingDate.getDay() + j) % 7;
+            let indx = (startingDate.day() + j) % 7;
             let col = schedules[indx * 17 + k];
             if (!timetable[i + indx]) timetable[i + indx] = [];
             timetable[i + indx].push({
@@ -78,26 +77,24 @@ jQuery(() => {
                 taskName: col.value,
                 priority: col.value == "Free" ? 0 : 4,
                 difficulty: col.value == "Free" ? 0 : 2,
-                constant: !col.value == "Free",
+                constant: col.value == "Free" ? false : true,
                 open: col.value == "Free",
                 courseCode: col.selectedOptions[0].dataset.coursecode,
                 dueDate: "None",
                 description: "None"
               },
             });
-            tempDate = new Date(tempDate.getTime() + 24 * 60 * 60 * 1000);
+            tempDate.add(1, 'days');
           }
         }
-        startingDate = new Date(
-          startingDate.getTime() + 7 * 24 * 60 * 60 * 1000
-        );
+        startingDate.add(7, 'days')
       }
 
       // Remove Extra added Days
       let tempT = Array.from(timetable);
       let offset = 0;
       tempT.forEach((date, index) => {
-        if (new Date(date[0].date).getTime() > finalDate.getTime()) {
+        if (moment(date[0].date).isAfter(finalDate)) {
           timetable.splice(index - offset, 1);
           offset += 1;
         }
@@ -106,9 +103,9 @@ jQuery(() => {
       //sort the timetable by date
 
       timetable.sort((first, second) =>
-        new Date(first[0].date) > new Date(second[0].date)
+        moment(first[0].date).isAfter(moment(second[0].date))
           ? 1
-          : new Date(first[0].date) < new Date(second[0].date)
+          : moment(first[0].date).isBefore(moment(second[0].date))
           ? -1
           : 0
       );
@@ -125,8 +122,8 @@ jQuery(() => {
           courses: data.courses,
           timeTable: timetable,
           dateSpan: dateSpan,
-          startDate: new Date(startDate.value),
-          endDate: new Date(endDate.value),
+          startDate: moment(startDate.val()).toJSON(),
+          endDate: moment(endDate.val()).toJSON(),
         }),
       })
         .then((response) => response.text())
@@ -137,13 +134,6 @@ jQuery(() => {
     }
   });
 
-  const dateDiffInDays = (a, b) => {
-    // Discard the time and time-zone information.
-    const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
-    const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
-
-    return Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24));
-  };
   const timeRanges = [
     { startTime: "08:00", endTime: "08:50" },
     { startTime: "08:55", endTime: "09:45" },

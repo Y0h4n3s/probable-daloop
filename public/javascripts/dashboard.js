@@ -123,8 +123,6 @@ const renderTaskInfoJumbo = (task, taskid) => {
 
 
 const renderAddTaskJumbo = async () => {
-  const timetable = document.querySelector("#timetable")
-  const today = new Date()
   // array of course objects 
   let myCourses = await fetchData(document.location.origin + "/api/user/courses")
   myCourses = ["", ...myCourses]
@@ -139,11 +137,11 @@ const renderAddTaskJumbo = async () => {
         <input name="add-task-name-input" type="text" class="add-task-name" placeholder="Task Name"/>
         </div>
         <div class="input-group">
-        <label class="add-task-form-label" for="add-task-priority-input">Priority</label>
+        <label class="add-task-form-label" for="add-task-priority-input">Priority(0-4)</label>
         <input name="add-task-priority-input" type="number" class="add-task-priority" placeholder="Task Priority" min="0" max="4"/>
         </div>
         <div class="input-group">
-        <label class="add-task-form-label" for="add-task-difficulty-input">Difficulty</label>
+        <label class="add-task-form-label" for="add-task-difficulty-input">Difficulty(0-4)</label>
         <input name="add-task-input-difficulty" type="number" class="add-task-difficulty" placeholder="Task Difficulty" min="0" max="4"/>
         </div>
         <div class="input-group">

@@ -1,6 +1,7 @@
-var router = (module.exports = require("express").Router());
+var router = module.exports = require("express").Router()
 const auth = require("../helpers/AuthHelper");
 const user = require("../helpers/UserHelper");
+var moment = require('moment')
 const { frames } = require("../helpers/Constants");
 const redirectLogin = (req, res, next) => {
   if (!req.session.uid) {
@@ -111,10 +112,10 @@ router.get(
     var task = "";
     for (let day of tasks) {
       if (
-        new Date(taskDate.replace("-", "/")).toDateString() ===
-        new Date(day[0].date.slice(0, 10).replace("-", "/")).toDateString()
+        new Date(taskDate.replace(/-/g, "/")).toDateString() ===
+        new Date(day[0].date.slice(0, 10).replace(/-/g, "/")).toDateString()
       ) {
-        for (let frame of day) {
+        for(var frame of day) {
           if (
             frame.startTime === taskStartTime &&
             frame.endTime == taskEndTime
@@ -146,17 +147,17 @@ router.delete(
     var taskStartTime = taskId.slice(10, 15);
     var taskEndTime = taskId.slice(15, 20);
     var found = false;
-    for (var day of tasks) {
-      if (found) break;
+    loop1: for (var day of tasks) {
       if (
-        new Date(taskDate.replace("-", "/")).toDateString() ===
-        new Date(day[0].date.slice(0, 10).replace("-", "/")).toDateString()
+        new Date(taskDate.replace(/-/g, "/")).toDateString() ===
+        new Date(day[0].date.slice(0, 10).replace(/-/g, "/")).toDateString()
       ) {
-        for (var frame of day) {
+        loop2: for(var frame of day)
           if (
             frame.startTime === taskStartTime &&
             frame.endTime == taskEndTime
           ) {
+            if (frame.task.constant){found = null; break loop1;}
             frame.task = {
               taskName: "Free",
               priority: 0,
@@ -167,11 +168,11 @@ router.delete(
               description: "None",
             };
             found = true;
-            break;
+            break loop1
           }
         }
       }
-    }
+    
 
     if (found) {
       const updatedTable = await user.updateTimetable(
@@ -180,14 +181,22 @@ router.delete(
         req.app.locals.db
       );
       res.status(201).json(updatedTable);
-    } else {
+    }
+    else if (found == null) {
+      res.status(400).json({ msg: "The Requested Task Could Not Be Deleted" })
+    } 
+    else {
       res.status(404).json({ msg: "The Requested Task Could Not Be Found" })
     }
   }
 );
 
+
+//Todo: implement time limit for adding tasks on current day
 router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
-  let {
+  
+  console.time("addtask")
+  var {
     taskName,
     priority = 2,
     difficulty = 2,
@@ -202,9 +211,12 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
   }
   var data = await user.dashboardData(req.session.uid, req.app.locals.db);
   var timetable = data.timeTable;
-  var taskDueDate = new Date(dueDate.replace("-", "/"));
-  var daysLeftTillDueDate = dateDiffInDays(new Date(), taskDueDate);
-  // values taken at a time
+  var taskDueDate = moment(dueDate);
+  var daysLeftTillDueDate = taskDueDate.diff(moment(), 'days');
+  if (daysLeftTillDueDate == 0) daysLeftTillDueDate = 1 
+  if (daysLeftTillDueDate < 0) res.redirect('/user/dashboard')
+  else {
+  // tasks done at a time
   var shards = [difficulty + 1];
   var freeSlots = countFreeSlots(timetable, difficulty + 1);
   var maxContinuousFreeSlots = max(freeSlots);
@@ -215,7 +227,9 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
   shards.sort((a, b) => (a > b ? -1 : b > a ? 1 : 0));
   var todaysIndex = getTodaysIndex(timetable);
 
-  var allFrames = timetable.reduce((acc, day) => acc.concat(day));
+  var allFrames2 = timetable
+    .reduce((acc, day) => acc.concat(day));
+  var allFrames = allFrames2.splice(todaysIndex * 17, allFrames2.length)
 
   for (var shard of Array.from(shards)) {
     freeSlots = countFreeSlots(timetable, difficulty + 1);
@@ -234,18 +248,19 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
       );
     }
     for (
-      let i = jumpOffset, reset = 0;
-      i < allFrames.length && i < daysLeftTillDueDate * 17;
+      var i = jumpOffset, reset = 0;
+      i < allFrames.length || i < daysLeftTillDueDate * 17;
       reset++, i = (i + jumpOffset) % (17 * daysLeftTillDueDate)
     ) {
       var check = false;
       
       for (var j = i; j < i + shard; j++) {
         if (null == allFrames[i + shard]) break;
-        check = allFrames[j].task.open;
+        check = allFrames[j] && allFrames[j].task.open;
         if (!check) break;
       }
       if (check) {
+        console.log("inserting at ", allFrames[i])
         for (var j = i; j < i + shard; j++) {
           allFrames[j].task.taskName = taskName;
           allFrames[j].task.priority = priority;
@@ -258,25 +273,28 @@ router.post("/user/addtask", redirectLogin, redirectSetup, async (req, res) => {
         shards.shift();
         break;
       }
-      if (reset == allFrames.length) {
-        jumpOffset++;
+      if (reset >= allFrames.length - 1) {
+        jumpOffset = Math.abs(jumpOffset - 1);
         reset = 0;
       }
     }
   }
-  var timetable = [];
-  var len = allFrames.length / 17;
+  var timetable = []
+  var len = allFrames2.length / 17;
+  for (var i =0; i < len; i++) {
+    timetable.push(allFrames2.splice(0, 17));
+  }
+  len = allFrames.length / 17;
   for (var i = 0; i < len; i++) {
     timetable.push(allFrames.splice(0, 17));
   }
-  console.log({ timetable });
-
+  console.timeEnd("addtask")
   const updatedTable = await user.updateTimetable(
     req.session.uid,
     timetable,
     req.app.locals.db
   );
-  res.json(updatedTable);
+  res.json(updatedTable);}
 });
 
 function calculateJumpOffset(
@@ -285,7 +303,7 @@ function calculateJumpOffset(
   totalFreeSlots,
   bias
 ) {
-  var jumpOffset = (totalFreeSlots * numOfShards) / daysLeftTillDueDate + bias;
+  var jumpOffset = ((totalFreeSlots * numOfShards) / numOfShards + daysLeftTillDueDate + bias) % (daysLeftTillDueDate * 17);
   return parseInt(jumpOffset);
 }
 
@@ -310,14 +328,14 @@ function countFreeSlots(timetable, shard) {
   var counter = 0;
   var slots = [];
   for (var day of timetable) {
-    for (var frame of day) {
+  for (var frame of day) {
       if (counter == shard || (!frame.task.open && counter != 0)) {
         slots.push(counter);
         counter = 0;
         continue;
       }
       counter++;
-    }
+  }
   }
   return slots;
 }
@@ -327,16 +345,14 @@ function max(arr) {
 }
 
 function getTodaysIndex(timetable) {
-  var startingSize = timetable.length;
-  var today = new Date();
-  timetable.filter((day) => new Date(day[0].date) > today);
-  return startingSize - timetable.length;
+  const today = moment()
+  var todaysIndex = 0;
+  for([index, day] of timetable.entries()) {
+    if(moment(day[0].date).isSame(today, 'day')) {
+      todaysIndex = index
+      break
+    }
+  }
+  return todaysIndex;
 }
 
-function dateDiffInDays(a, b) {
-  // Discard the time and time-zone information.
-  const utc1 = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate());
-  const utc2 = Date.UTC(b.getFullYear(), b.getMonth(), b.getDate());
-
-  return Math.floor((utc2 - utc1) / (1000 * 60 * 60 * 24));
-}

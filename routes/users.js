@@ -1,6 +1,7 @@
 const e = require("express");
 var express = require("express");
 var router = express.Router();
+var moment = require('moment')
 var user = require("../helpers/UserHelper");
 /* GET users listing. */
 
@@ -39,9 +40,13 @@ router.get(
   redirectLogin,
   redirectSetup,
   async function (req, res) {
-    let data = await user.dashboardData(req.session.uid, req.app.locals.db);
-    let formattedTimetable = formatTimetableData(data);
-    res.render("user/dashboard", { data: formattedTimetable });
+    var data = await user.dashboardData(req.session.uid, req.app.locals.db);
+    var formattedTimetable = formatTimetableData(data);
+    if (!formattedTimetable) {
+      res.json({msg: "An Error Occured While Loading Timetable"})
+    } else {
+      res.render("user/dashboard", { data: formattedTimetable });
+    }
   }
 );
 
@@ -61,8 +66,8 @@ router.post("/setup", redirectLogin, redirectHome, async function (req, res) {
 router.post("/addtask", redirectLogin, redirectSetup, async (req, res) => {});
 
 
-// pagination
-function formatTimetableData(data) {
+// pagination by one week from today
+function formatTimetableData(data, tdIndex = null) {
   let days = [
     "Sunday",
     "Monday",
@@ -72,16 +77,26 @@ function formatTimetableData(data) {
     "Friday",
     "Saturday",
   ];
-  let today = new Date();
+  let today = moment(new Date().toLocaleDateString().replace(/\//g, '-'), "MM-DD-YYYY")
   let thisWeek = [[]];
-  let tdIndex = null;
+  
   let timetable = data.timeTable;
-  // get todays index from the timetable
-  timetable.forEach((day, index) => {
-    if (new Date(day[0].date.slice(0, 10).replace("-", "/")).toDateString() === today.toDateString()) {
+  // get todays index from the timetable if it is not provided as argument
+  if (tdIndex === null) {
+    if (moment(timetable[0][0].date.slice(0, 10)).dayOfYear() > today.dayOfYear()) {
+      tdIndex = 0;
+    } else {
+  for(var [index, day] of timetable.entries()) {
+    if (moment(day[0].date.slice(0, 10)).dayOfYear() == today.dayOfYear()) {
       tdIndex = index;
+      break;
     }
-  });
+  }
+}
+}
+if (tdIndex === null) {
+  return null;
+}
   // grab one week starting from todays index from the timetable
   for (let j = 0, i = tdIndex; i < tdIndex + 7; i++, j++) {
     //stop if the day is past the timetable
@@ -89,7 +104,7 @@ function formatTimetableData(data) {
 
     thisWeek[j] = timetable[i];
     for (let k = 0; k < 17; k++)
-      thisWeek[j][k].dateName = days[(today.getDay() + j) % 7];
+      thisWeek[j][k].dateName = moment(thisWeek[j][k].date.slice(0,10)).format('dddd');
   }
   return thisWeek;
 }

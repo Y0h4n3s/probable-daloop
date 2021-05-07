@@ -1,5 +1,4 @@
 extends ../layout.jade
-
 block content
   .timetable-table
     table(class="tc collapse" id="timetable")
@@ -9,14 +8,14 @@ block content
           each day in data
             th(class="bg-moon-gray" data-date=day[0].date) 
               p #{day[0].dateName}
-              p(class="date-value") #{new Date(day[0].date.slice(0,10).replace("-","/")).toDateString()}
+              p(class="date-value") #{new Date(day[0].date.slice(0,10).replace(/-/g,"/")).toDateString()}
       tbody
         - for (let i = 0; i < 17; i++)
           tr(class=i%2==0? "striped--near-white":"striped--light-gray")
             td(class="time-range") #{data[0][i].startTime} - #{data[0][i].endTime}
             each day in data
               td(data-label=day[i].dateName)
-                button(class="priority-#{day[i].task.priority} difficulty-#{day[i].task.difficulty} task-btn" data-date=day[i].date) #{day[i].task.taskName}
+                button(class="priority-#{day[i].task.priority} difficulty-#{day[i].task.difficulty} task-btn #{day[i].task.constant ? 'constant-task' : ''}" data-date=day[i].date) #{day[i].task.taskName}
   button(class="add-task-btn" id="add-task-btn")
     script(src="../javascripts/jquery.js")
   script(src="../javascripts/stacktable.js")

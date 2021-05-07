@@ -2,19 +2,25 @@ extends ../layout.jade
 
 
 block content
-  div(class="setup-container container")
+  div(class="setup-container")
   
-    form(action="javascript:void(0)" method="post" class="add-courses-form container" data-stepno=stepNo)
+    form(action="javascript:void(0)" method="post" class="add-courses-form" data-stepno=stepNo)
       .course-info-inputs
-        button(class="add-course-button" id="add-course-button") Add Course
+        
 
         .course-info-input
-          input(type="text" placeholder="Course Name")
-          input(type="number" placeholder="Course Cp" min=1)
-          input(type="text" placeholder="Course Code")
-      div(class="time-range-picker container")
-        input(type="date" min=minDate id="start-date" value="2021-05-01")
-        input(type="date" id="end-date" value="2021-05-10")
+          label(for="course-name-input" class="course-info-label") Course Name
+          input(type="text" name="course-name-input" placeholder="Course Name")
+          label(for="course-cp-input" class="course-info-label") Course Cp
+          input(type="number" name="course-cp-input" placeholder="Course Cp" min=1)
+          label(for="course-code-input" class="course-info-label") Course Code
+          input(type="text" name="course-code-input" placeholder="Course Code")
+      button(class="add-course-button" id="add-course-button") Add Course
+      div(class="time-range-picker")
+        label(for="start-date-input" class="course-info-label") Starting Date
+        input(type="date" name="start-date-input" min=minDate id="start-date")
+        label(for="end-date-input" class="course-info-label") Final Date
+        input(type="date" name="end-date-input" id="end-date")
     .timetable-table
 
     button(type="submit" class="course-selection-next") Next

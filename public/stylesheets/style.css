@@ -35,7 +35,7 @@ table {
   table-layout: fixed;
   width: 100%;
 }
- th, select{
+ th, select, td{
   font-size: var(--normal-fs);
   padding: 15px 20px;
   border: none;
@@ -130,6 +130,8 @@ tr {
   box-shadow: var(--container-shadow-h);
 }
 
+
+
 /* Sign up page */
 
 
@@ -188,32 +190,50 @@ tr {
 
 /* Setup Page */
 
+.setup-container {
+  display: grid;
+  place-items: center;
+  background-color: rgba(11, 11, 11, 0.2);
+}
 
+.add-course-button {
+  margin-bottom: 4%;
+}
 .course-selection-next {
   margin-top: 20px;
 }
 .add-courses-form {
   width: 100%;
+  display: grid;
+  place-items: center;
+}
+.course-info-label {
+  margin-left: 12.5%;
 }
 
 .course-info-inputs {
   width: 75%;
   margin: 2% 0;
 }
-.course-info-input {
+.course-info-input, .time-range-picker {
   display: flex;
   justify-content: center;
+  flex-flow: column;
   align-items: center;
   margin: 3px;
+  background-color: white;
+  box-shadow: var(--container-shadow);
+  border-radius: 5px;
+  padding: 5% 0;
+}
+.time-range-picker {
+  width: 75%;
 }
 
-.time-range-picker {
-  width: 100%;
-}
 /* Dashboard page */
 .task-btn {
   width: 100%;
-
+  overflow: hidden;
 }
 
 .date-value {
@@ -497,4 +517,9 @@ tr {
 @media (max-width: 1100px) {
   .stacktable.large-only { display: none; }
   .stacktable.small-only { display: table; }
+}
+
+.constant-task {
+  background: gray;
+  color: white;
 }
